@@ -1,0 +1,144 @@
+// datasource db defines the database connection settings.
+// It is configured for PostgreSQL and uses an environment variable for the connection URL.
+// The 'extensions' feature enables the use of PostgreSQL-specific data types.
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+}
+
+// generator db configures Prisma Client settings.
+// It is set up to use Prisma Client Python with asyncio interface and specific features.
+generator db {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+  previewFeatures      = ["postgresqlExtensions"]
+}
+
+model User {
+  id                String             @id @default(dbgenerated("gen_random_uuid()"))
+  email             String             @unique
+  password          String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  role              UserRole           @default(USER)
+  profiles          Profile[]
+  imageRequests     ImageRequest[]
+  moderationReports ModerationReport[]
+  Subscription      Subscription[]
+  AccessLog         AccessLog[]
+  Feedback          Feedback?
+}
+
+model Profile {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  userId    String
+  firstName String?
+  lastName  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ImageRequest {
+  id                   String             @id @default(dbgenerated("gen_random_uuid()"))
+  userId               String
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  textDescription      String
+  AIModel              AIModel
+  imageUrl             String?
+  theme                String?
+  style                String?
+  status               ImageRequestStatus
+  User                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customizationOptions CustOption[]
+  ModerationReport     ModerationReport[]
+}
+
+model CustOption {
+  id             String       @id @default(dbgenerated("gen_random_uuid()"))
+  imageRequestId String
+  option         String
+  value          String
+  createdAt      DateTime     @default(now())
+  ImageRequest   ImageRequest @relation(fields: [imageRequestId], references: [id], onDelete: Cascade)
+}
+
+model ModerationReport {
+  id             String       @id @default(dbgenerated("gen_random_uuid()"))
+  userId         String
+  reportedAt     DateTime     @default(now())
+  reason         String
+  description    String
+  imageRequestId String
+  User           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ImageRequest   ImageRequest @relation(fields: [imageRequestId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id        String           @id @default(dbgenerated("gen_random_uuid()"))
+  userId    String
+  startedAt DateTime         @default(now())
+  expiresAt DateTime
+  tier      SubscriptionTier
+  User      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model APIKey {
+  id         String    @id @default(dbgenerated("gen_random_uuid()"))
+  service    String
+  apiKey     String
+  createdAt  DateTime  @default(now())
+  validUntil DateTime?
+}
+
+model AccessLog {
+  id           String   @id @default(dbgenerated("gen_random_uuid()"))
+  userId       String?
+  endpoint     String
+  accessedAt   DateTime @default(now())
+  method       String
+  responseTime Int // Response time in milliseconds
+  User         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Feedback {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  content   String
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  type       String
+  occurredAt DateTime @default(now())
+  metadata   Json
+}
+
+enum AIModel {
+  DALLE2
+  IMAGEN
+  MIDJOURNEY
+  STABLEDIFFUSION
+}
+
+enum ImageRequestStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum UserRole {
+  USER
+  SUBSCRIBER
+  ADMIN
+}
+
+enum SubscriptionTier {
+  BASIC
+  PREMIUM
+}
+

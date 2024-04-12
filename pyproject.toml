@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "image-maker"
+version = "0.1.0"
+description = "Based on the information gathered, your task involves creating images from input text utilizing advancements in AI technology. Specifically, you'll be leveraging the capabilities of sophisticated text-to-image AI models like DALL·E 2 by OpenAI, Google's Imagen, Midjourney, and Stable Diffusion by Stability AI. These models are distinguished by their ability to generate high-resolution images accurately reflecting the nuances of given textual descriptions. They offer improved fidelity, customization options, and accessibility compared to earlier models, enabling the creation of detailed and creative images based on specific themes, styles, or subjects of interest expressed in text. This project would involve integrating one or more of these AI technologies to develop a system that interprets textual inputs and produces corresponding images, capturing the specified details, themes, and styles as closely as possible."
+authors = ["AutoGPT <info@agpt.co>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+bcrypt = "^3.2.0"
+fastapi = "*"
+prisma = "*"
+pydantic = "*"
+uvicorn = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
